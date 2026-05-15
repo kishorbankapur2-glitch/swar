@@ -608,7 +608,7 @@
             100% { transform: scale(1.06) rotate(0deg); }
         }
 
-        /* ─── FEATURED CARDS (JioHotstar Style Swipe Rows) ─── */
+        /* ─── FEATURED CARDS (Slider) ─── */
         .featured-section { padding: 4px 0 20px; }
         .featured-row { display: flex; gap: 18px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; min-height: 320px; }
         .featured-row::-webkit-scrollbar { display: none; }
@@ -699,7 +699,7 @@
         .kl-card-2-title { font-size: 0.78rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; color: #fff; }
         .kl-card-2-meta { font-size: 0.68rem; color: var(--text-subdued); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ─── SECTION GRID ─── */
+        /* ─── SECTION & TRACK GRID ─── */
         .section { padding: 24px; }
         .section-header { margin-bottom: 16px; }
         .section-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; }
@@ -1486,7 +1486,7 @@
             <button class="mood-chip" onclick="onMoodChip(this,'feel-good')">Feel Good</button>
             <button class="mood-chip" onclick="onMoodChip(this,'party')">Party</button>
             <button class="mood-chip" onclick="onMoodChip(this,'relax')">Relax</button>
-            <button class="mood-chip" onclick="onMoodChip(this,'energize')">Workout</button>
+            <button class="mood-chip" onclick="onMoodChip(this,'energize')">Energize</button>
         </div>
         <div class="featured-section">
             <div class="featured-row" id="featuredRow"></div>
@@ -1535,7 +1535,7 @@
     <div class="nav-indicator-slab" id="navIndicatorSlab"></div>
     <button class="nav-btn active" id="nav-home" onclick="navigateTo('home')"><svg viewBox="0 0 24 24"><path d="M12 3l-8 7v11h6v-6h4v6h6V10l-8-7z"/></svg>Home</button>
     <button class="nav-btn" id="nav-search" onclick="navigateTo('search')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5z"/></svg>Search</button>
-    <button class="nav-btn" id="nav-library" onclick="navigateTo('library')"><svg viewBox="0 0 24 24"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8gt;c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>Library</button>
+    <button class="nav-btn" id="nav-library" onclick="navigateTo('library')"><svg viewBox="0 0 24 24"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>Library</button>
     <button class="nav-btn" id="nav-profile" onclick="navigateTo('profile')"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
 </nav>
 
@@ -1671,6 +1671,13 @@
     }, 2000);
 })();
 
+// ─── Service Worker ───
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.warn('[SW]', err));
+    });
+}
+
 // ─── Marquee Engine ───
 const Marquee = (() => {
     const instances = new Set();
@@ -1735,64 +1742,80 @@ document.addEventListener('click', e => {
     setTimeout(() => chip.style.removeProperty('--after-opacity'), 500);
 });
 
-// ─── Pure Curated Premium Audio Repositories ───
-const FALLBACK_USER_TRACKS = [
-    { id: '2Vv-BfVoq4g', title: 'Perfect', artist: 'Ed Sheeran', duration: 279 },
-    { id: '1Ek8X0idI44', title: 'Night Changes', artist: 'One Direction', duration: 240 },
-    { id: 'fKopy74weus', title: 'Starboy', artist: 'The Weeknd', duration: 230 },
-    { id: '3AtDnEC4zak', title: 'Attention', artist: 'Charlie Puth', duration: 210 },
-    { id: 'tgOu00H6KTo', title: 'Closer', artist: 'The Chainsmokers', duration: 245 },
-    { id: '4NRXx6U8ABQ', title: 'Blinding Lights', artist: 'The Weeknd', duration: 200 },
-    { id: 'pa00E_J26FA', title: 'Believer', artist: 'Imagine Dragons', duration: 204 },
-    { id: 'v2BfP_oZqyI', title: 'Stay', artist: 'The Kid LAROI ft. Justin Bieber', duration: 141 },
-    { id: 'iX-QaNcmw8M', title: 'Shape of You', artist: 'Ed Sheeran', duration: 233 },
-    { id: '0J2QdDbf7GA', title: 'Wake Me Up', artist: 'Avicii', duration: 247 },
-    { id: 'Co0tS6nI0G4', title: 'Let Me Love You', artist: 'DJ Snake ft. Justin Bieber', duration: 205 },
-    { id: '09R8_2nJtjg', title: 'Sugar', artist: 'Maroon 5', duration: 300 }
+// ─── Core Constants & Extended Premium Playlists ───
+const PIPED_INSTANCES = [
+    'https://pipedapi.kavin.rocks',
+    'https://pipedapi.adminforge.de',
+    'https://pipedapi.smnz.de',
+    'https://pipedapi.darkness.services',
+    'https://api.piped.private.coffee',
+    'https://pipedapi.syncstream.org'
+];
+
+// Expanded Curated Premium Tracks (25 songs for swipe row list mapping)
+const PREMIUM_CARDS_TRACKS = [
+    { id: '2Vv-BfVoq4g', title: 'Perfect', artist: 'Ed Sheeran', duration: 279, meta: '4:39' },
+    { id: '1Ek8X0idI44', title: 'Night Changes', artist: 'One Direction', duration: 240, meta: '4:00' },
+    { id: 'fKopy74weus', title: 'Starboy', artist: 'The Weeknd', duration: 230, meta: '3:50' },
+    { id: '3AtDnEC4zak', title: 'Attention', artist: 'Charlie Puth', duration: 210, meta: '3:30' },
+    { id: 'tgOu00H6KTo', title: 'Closer', artist: 'The Chainsmokers', duration: 245, meta: '4:05' },
+    { id: '7wtfhZwyrP0', title: 'Yummy', artist: 'Justin Bieber', duration: 210, meta: '3:30' },
+    { id: 'kJQP7kiw5Fk', title: 'Despacito', artist: 'Luis Fonsi ft. Daddy Yankee', duration: 282, meta: '4:42' },
+    { id: 'OPf0YbXqDm0', title: 'Mark Upton', artist: 'Uptown Funk', duration: 270, meta: '4:30' },
+    { id: 'K4DyBUG242c', title: 'In The End', artist: 'Linkin Park', duration: 216, meta: '3:36' },
+    { id: '09R8_2nJtjg', title: 'Sugar', artist: 'Maroon 5', duration: 300, meta: '5:00' },
+    { id: '4NRXx6U8ABQ', title: 'Blinding Lights', artist: 'The Weeknd', duration: 200, meta: '3:20' },
+    { id: 'hT_nvWreIhg', title: 'Counting Stars', artist: 'OneRepublic', duration: 257, meta: '4:17' },
+    { id: 'Co0tS6nI0G4', title: 'Let Me Love You', artist: 'DJ Snake / Justin Bieber', duration: 205, meta: '3:25' },
+    { id: 'iX-QaNcmw8M', title: 'Shape of You', artist: 'Ed Sheeran', duration: 233, meta: '3:53' },
+    { id: 'pa00E_J26FA', title: 'Believer', artist: 'Imagine Dragons', duration: 204, meta: '3:24' },
+    { id: 'f_EioO80V94', title: 'Mockingbird', artist: 'Eminem', duration: 251, meta: '4:11' },
+    { id: 'w7_r5Q1F_co', title: 'Bad Boy', artist: 'Raaban / Tungevaag', duration: 195, meta: '3:15' },
+    { id: 'v2BfP_oZqyI', title: 'Stay', artist: 'The Kid LAROI & Justin Bieber', duration: 141, meta: '2:21' },
+    { id: '0J2QdDbf7GA', title: 'Wake Me Up', artist: 'Avicii', duration: 247, meta: '4:07' },
+    { id: '6A0v-9I0K9o', title: 'Love Me Like You Do', artist: 'Ellie Goulding', duration: 252, meta: '4:12' },
+    { id: 'L0A8w_v9N6A', title: 'Cheap Thrills', artist: 'Sia', duration: 211, meta: '3:31' },
+    { id: 'h7C8NfA_2Q4', title: 'Animals', artist: 'Martin Garrix', duration: 304, meta: '5:04' },
+    { id: 'N2C0U9w8v7Q', title: 'Unstoppable', artist: 'Sia', duration: 217, meta: '3:37' },
+    { id: 'B8C_8w9v7Q0', title: 'Lean On', artist: 'Major Lazer & DJ Snake', duration: 176, meta: '2:56' },
+    { id: 'G8C_U0w8v6A', title: 'Rockabye', artist: 'Clean Bandit', duration: 251, meta: '4:11' }
 ];
 
 const MOOD_TRACKS_DICTIONARY = {
     'romance': [
-        { id: 'vUCM_O-Zs1Y', title: 'Tum Hi Ho', artist: 'Arijit Singh', duration: 262 },
-        { id: 'T94PHkuydXo', title: 'Raataan Lambiyan', artist: 'Jubin Nautiyal', duration: 230 },
-        { id: 'WmuF8H_02As', title: 'Channa Mereya', artist: 'Arijit Singh', duration: 289 },
-        { id: 'kXMR_9o1Vxo', title: 'Kesariya', artist: 'Arijit Singh', duration: 268 },
-        { id: 'Ax8o0w_v8k0', title: 'Jeena Jeena', artist: 'Atif Aslam', duration: 229 },
-        { id: 'Zi4_v9Xk8Ao', title: 'Pee Loon', artist: 'Mohit Chauhan', duration: 287 },
-        { id: 'bc00E_U9VzA', title: 'Dil Diyan Gallan', artist: 'Atif Aslam', duration: 260 }
+        { id: 'vUCM_O-Zs1Y', title: 'Tum Hi Ho', artist: 'Arijit Singh', duration: 262, meta: '4:22' },
+        { id: 'T94PHkuydXo', title: 'Raataan Lambiyan', artist: 'Jubin Nautiyal', duration: 230, meta: '3:50' },
+        { id: 'WmuF8H_02As', title: 'Channa Mereya', artist: 'Arijit Singh', duration: 289, meta: '4:49' },
+        { id: 'kXMR_9o1Vxo', title: 'Kesariya', artist: 'Arijit Singh', duration: 268, meta: '4:28' },
+        { id: 'Ax8o0w_v8k0', title: 'Jeena Jeena', artist: 'Atif Aslam', duration: 229, meta: '3:49' }
     ],
     'feel-good': [
-        { id: 'KdhQ7k_iW5M', title: 'Love You Zindagi', artist: 'Jasleen Royal', duration: 232 },
-        { id: 'fLexgO8oVw4', title: 'Happy', artist: 'Pharrell Williams', duration: 233 },
-        { id: 'Co0tS6nI0G4', title: 'Can\'t Stop the Feeling', artist: 'Justin Timberlake', duration: 236 },
-        { id: '4NRXx6U8ABQ', title: 'Blinding Lights', artist: 'The Weeknd', duration: 200 },
-        { id: '0J2QdDbf7GA', title: 'Wake Me Up', artist: 'Avicii', duration: 247 }
+        { id: 'fLexgO8oVw4', title: 'Happy', artist: 'Pharrell Williams', duration: 233, meta: '3:53' },
+        { id: 'KdhQ7k_iW5M', title: 'Love You Zindagi', artist: 'Jasleen Royal', duration: 232, meta: '3:52' },
+        { id: 'Co0tS6nI0G4', title: 'Can\'t Stop the Feeling', artist: 'Justin Timberlake', duration: 236, meta: '3:56' },
+        { id: '4NRXx6U8ABQ', title: 'Blinding Lights', artist: 'The Weeknd', duration: 200, meta: '3:20' }
     ],
     'party': [
-        { id: 'OPf0YbXqDm0', title: 'Uptown Funk', artist: 'Bruno Mars', duration: 270 },
-        { id: 'h7C8NfA_2Q4', title: 'Animals', artist: 'Martin Garrix', duration: 304 },
-        { id: 'tgOu00H6KTo', title: 'Closer', artist: 'The Chainsmokers', duration: 245 },
-        { id: 'w7_r5Q1F_co', title: 'Bad Boy', artist: 'Tungevaag & Raaban', duration: 195 },
-        { id: 'B8C_8w9v7Q0', title: 'Lean On', artist: 'Major Lazer & DJ Snake', duration: 176 }
+        { id: 'OPf0YbXqDm0', title: 'Uptown Funk', artist: 'Bruno Mars', duration: 270, meta: '4:30' },
+        { id: 'h7C8NfA_2Q4', title: 'Animals', artist: 'Martin Garrix', duration: 304, meta: '5:04' },
+        { id: 'tgOu00H6KTo', title: 'Closer', artist: 'The Chainsmokers', duration: 245, meta: '4:05' },
+        { id: '0J2QdDbf7GA', title: 'Wake Me Up', artist: 'Avicii', duration: 247, meta: '4:07' }
     ],
     'relax': [
-        { id: '1Ek8X0idI44', title: 'Night Changes', artist: 'One Direction', duration: 240 },
-        { id: '3AtDnEC4zak', title: 'Attention', artist: 'Charlie Puth', duration: 210 },
-        { id: '2Vv-BfVoq4g', title: 'Perfect', artist: 'Ed Sheeran', duration: 279 },
-        { id: 'fKopy74weus', title: 'Starboy', artist: 'The Weeknd', duration: 230 }
+        { id: '1Ek8X0idI44', title: 'Night Changes', artist: 'One Direction', duration: 240, meta: '4:00' },
+        { id: '3AtDnEC4zak', title: 'Attention', artist: 'Charlie Puth', duration: 210, meta: '3:30' },
+        { id: '2Vv-BfVoq4g', title: 'Perfect', artist: 'Ed Sheeran', duration: 279, meta: '4:39' },
+        { id: 'fKopy74weus', title: 'Starboy', artist: 'The Weeknd', duration: 230, meta: '3:50' }
     ],
     'energize': [
-        { id: 'pa00E_J26FA', title: 'Believer', artist: 'Imagine Dragons', duration: 204 },
-        { id: 'K4DyBUG242c', title: 'In The End', artist: 'Linkin Park', duration: 216 },
-        { id: 'N2C0U9w8v7Q', title: 'Unstoppable', artist: 'Sia', duration: 217 },
-        { id: 'f_EioO80V94', title: 'Mockingbird', artist: 'Eminem', duration: 251 },
-        { id: 'L0A8w_v9N6A', title: 'Remember The Name', artist: 'Fort Minor', duration: 230 },
-        { id: 'hT_nvWreIhg', title: 'Lose Yourself', artist: 'Eminem', duration: 326 },
-        { id: 'pa00E_J26FA', title: 'Thunder', artist: 'Imagine Dragons', duration: 187 }
+        { id: 'pa00E_J26FA', title: 'Believer', artist: 'Imagine Dragons', duration: 204, meta: '3:24' },
+        { id: 'K4DyBUG242c', title: 'In The End', artist: 'Linkin Park', duration: 216, meta: '3:36' },
+        { id: 'N2C0U9w8v7Q', title: 'Unstoppable', artist: 'Sia', duration: 217, meta: '3:37' },
+        { id: 'f_EioO80V94', title: 'Mockingbird', artist: 'Eminem', duration: 251, meta: '4:11' }
     ]
 };
 
-// ─── State Engine Variables ───
+// ─── State Configuration ───
 let player = null, isPlaying = false, isPlayerReady = false;
 let currentTrackIndex = 0, tracks = [], progressInterval = null;
 let isFullscreenOpen = false, isShuffleOn = false, repeatMode = 0;
@@ -1835,7 +1858,7 @@ function showPlayerLoading(show) {
     show ? $('playerLoadingOverlay').classList.add('show') : $('playerLoadingOverlay').classList.remove('show');
 }
 
-// ─── YouTube Implementation ───
+// ─── YouTube Player Logic ───
 function initYouTubePlayer() {
     if (typeof YT !== 'undefined' && YT.Player) createPlayer();
     else {
@@ -1889,33 +1912,14 @@ function handleTrackEnd() {
     else if (isShuffleOn && tracks.length > 1) nextTrack();
 }
 
-// ─── Real Play History Tracking Engine ───
+// ─── Track History Storage Engine ───
 function recordPlayedTrackInHistory(track) {
     let history = Storage.get('swar_played_history_list') || [];
     history = history.filter(item => item.id !== track.id);
     history.unshift(track);
     if(history.length > 30) history.pop();
     Storage.set('swar_played_history_list', history);
-    
-    // Auto sync user layout matrices on track invocation
     renderDynamicKLGrid(); 
-    
-    // If user is inside For You active module state, cleanly expand dynamic dashboard slider view
-    const activeChip = document.querySelector('.mood-chip.active');
-    if (activeChip && activeChip.textContent === 'For You') {
-        syncForYouSliderWithHistory();
-    }
-}
-
-// Sync slider view row accurately with user track metadata streams
-function syncForYouSliderWithHistory() {
-    const userHistory = Storage.get('swar_played_history_list') || [];
-    if (userHistory.length > 0) {
-        window.homeFeaturedTracks = [...userHistory];
-    } else {
-        window.homeFeaturedTracks = [...FALLBACK_USER_TRACKS];
-    }
-    renderDynamicFeaturedRow(window.homeFeaturedTracks);
 }
 
 // ─── Track Playback Controller ───
@@ -2065,8 +2069,36 @@ function setupAlbumGestures() {
         }
     }, { passive: true });
 }
+function showHeartPop() {
+    const wrap = $('fsAlbumWrap');
+    const heart = document.createElement('div');
+    heart.textContent = '❤️';
+    heart.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);font-size:80px;z-index:999;pointer-events:none;animation:heartPop 0.75s ease forwards;filter:drop-shadow(0 0 20px rgba(255,100,100,0.6))';
+    wrap.appendChild(heart);
+    setTimeout(() => heart.remove(), 800);
+}
 
-// ─── Fullscreen View Gestures ───
+// ─── Media Session ───
+function setupMediaSession(track) {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title, artist: track.artist, album: 'Swar Premium Player',
+        artwork: [{ src: getThumbnail(track.id), sizes: '512x512', type: 'image/jpeg' }]
+    });
+    navigator.mediaSession.setActionHandler('play', togglePlay);
+    navigator.mediaSession.setActionHandler('pause', togglePlay);
+    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+    navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+    navigator.mediaSession.setActionHandler('seekto', d => { if (player?.seekTo) player.seekTo(d.seekTime); });
+}
+function updateMediaSessionState() {
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+}
+function updateAtmosphericBackground() {
+    $('fullscreenBg').style.background = 'linear-gradient(180deg,#0f0f12 0%,#000 100%)';
+}
+
+// ─── Fullscreen Controller ───
 function setupSwipeGesture() {
     const fs = $('fullscreenPlayer');
     fs.addEventListener('touchstart', e => {
@@ -2112,27 +2144,7 @@ function closeFullscreen() {
     document.documentElement.style.overflow = '';
 }
 
-// ─── Media Session Integration ───
-function setupMediaSession(track) {
-    if (!('mediaSession' in navigator)) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: track.title, artist: track.artist, album: 'Swar Premium Player',
-        artwork: [{ src: getThumbnail(track.id), sizes: '512x512', type: 'image/jpeg' }]
-    });
-    navigator.mediaSession.setActionHandler('play', togglePlay);
-    navigator.mediaSession.setActionHandler('pause', togglePlay);
-    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
-    navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
-    navigator.mediaSession.setActionHandler('seekto', d => { if (player?.seekTo) player.seekTo(d.seekTime); });
-}
-function updateMediaSessionState() {
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-}
-function updateAtmosphericBackground() {
-    $('fullscreenBg').style.background = 'linear-gradient(180deg,#0f0f12 0%,#000 100%)';
-}
-
-// ─── In-App Browser ───
+// ─── In-App WebView ───
 function openInAppWebview(url, title) {
     $('inappWebviewTitle').textContent = title || 'About';
     $('inappWebviewUrl').textContent = url;
@@ -2152,20 +2164,19 @@ function openProfileModal() {
     av.innerHTML = u.pic ? `<img src="${u.pic}">` : u.name[0].toUpperCase();
     $('profileModalName').textContent = u.name;
     $('profileStatLiked').textContent = likedTracks.size;
-    const historyHistory = Storage.get('swar_played_history_list') || [];
-    $('profileStatPlayed').textContent = historyHistory.length || totalPlayedCount;
+    $('profileStatPlayed').textContent = totalPlayedCount;
     $('profileModal').classList.add('active');
 }
 function closeProfileModal() { $('profileModal').classList.remove('active'); }
 
-// ─── Indicator Slab Control ───
+// ─── Navigation Indicator ───
 function updateNavIndicatorSlab() {
     const activeBtn = document.querySelector('.nav-btn.active');
     const slab = $('navIndicatorSlab');
     if (activeBtn && slab) { slab.style.left = activeBtn.offsetLeft + 'px'; slab.style.width = activeBtn.offsetWidth + 'px'; }
 }
 
-// ─── Remote Network Search API ───
+// ─── Global Online Search Engine ───
 function saveSearchQuery(q) {
     if (!q || q.trim().length < 2) return;
     let history = Storage.get('swar_last_searches') || [];
@@ -2216,7 +2227,7 @@ async function searchAcrossInstances(query, signal) {
     return await Promise.any(promises);
 }
 
-// ─── Rendering Dashboards ───
+// ─── Layout Grid Renderers ───
 function renderTrackGrid() {
     $('contentArea').innerHTML = `<div class="track-grid">${tracks.map((t, i) => `
         <div class="track-card" onclick="playTrack(${i})" style="--stagger:${(i * 0.05).toFixed(2)}s">
@@ -2257,7 +2268,6 @@ function renderQueueList() {
 function renderProfileView() {
     $('sectionTitle').textContent = 'Profile';
     const u = user || { name: 'Guest User', pic: null };
-    const playedHist = Storage.get('swar_played_history_list') || [];
     $('contentArea').innerHTML = `
         <div class="profile-page">
             <div class="profile-hero" onclick="openProfileModal()">
@@ -2266,7 +2276,7 @@ function renderProfileView() {
                 </div>
                 <div class="profile-hero-info">
                     <h2>${escapeHtml(u.name)}</h2>
-                    <p>Premium Monochrome Tier · ${likedTracks.size} liked · ${playedHist.length} played</p>
+                    <p>Premium Monochrome Tier · ${likedTracks.size} liked · ${totalPlayedCount} played</p>
                 </div>
                 <div class="profile-hero-arrow"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
             </div>
@@ -2312,7 +2322,7 @@ function openAboutPage() {
     openInAppWebview('https://kishorbankapur2-glitch.github.io/social-id/', 'About — Swar');
 }
 
-// ─── Home Grid Orchestration Engine ───
+// ─── Home Base Initialization & Engine Loading ───
 function renderHomeSkeletons() {
     $('featuredRow').innerHTML = Array(4).fill('<div class="featured-card skeleton" style="opacity:1"></div>').join('');
     $('klGrid').innerHTML = Array(4).fill('<div class="kl-card skeleton" style="height:170px;border-radius:12px;opacity:1"></div>').join('');
@@ -2322,15 +2332,15 @@ function renderHomeSkeletons() {
 async function loadAndRenderHome() {
     renderHomeSkeletons();
     
-    // Bootstraps 20-30 massive high-fidelity true historical data tracks into slider row view
-    syncForYouSliderWithHistory();
+    // Injecting 25-30 massive high-fidelity custom tracks inside the top slider context
+    window.homeFeaturedTracks = [...PREMIUM_CARDS_TRACKS];
     
-    renderDynamicKLGrid(); 
+    renderDynamicFeaturedRow(window.homeFeaturedTracks);
+    renderDynamicKLGrid(); // User Played Track Engine
     renderDynamicKLGrid2();
 }
 
 function renderDynamicFeaturedRow(arr) {
-    if (!arr || arr.length === 0) return;
     $('featuredRow').innerHTML = arr.map((t, i) => `
         <div class="featured-card" onclick="playDynamicFeatured(${i})" style="--stagger:${(i * 0.04).toFixed(2)}s">
             <img class="featured-card-bg" src="${getThumbnail(t.id)}" loading="lazy" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/${t.id}/hqdefault.jpg'">
@@ -2343,12 +2353,13 @@ function renderDynamicFeaturedRow(arr) {
     `).join('');
 }
 
-// Mirroring the absolute layout parameters specified for active history playback tracing
+// Fixed to only reflect real tracks played by user via client active playback
 function renderDynamicKLGrid() {
     const historyPlayedTracks = Storage.get('swar_played_history_list') || [];
     
     if (historyPlayedTracks.length === 0) {
-        const defaultSet = FALLBACK_USER_TRACKS.slice(0, 8);
+        // Fallback standard curated set if local device footprint empty
+        const defaultSet = PREMIUM_CARDS_TRACKS.slice(0, 6);
         $('klGrid').innerHTML = defaultSet.map((t, i) => `
             <div class="kl-card" onclick="playFallbackKL(${i})" style="--stagger:${(i * 0.07).toFixed(2)}s">
                 <div class="kl-card-img-wrap">
@@ -2443,32 +2454,31 @@ function playHistoryKL(i) {
     tracks = [...historyPlayedTracks]; currentTrackIndex = i; playTrack(i);
 }
 function playFallbackKL(i) {
-    const defaultSet = FALLBACK_USER_TRACKS.slice(0, 8);
+    const defaultSet = PREMIUM_CARDS_TRACKS.slice(0, 6);
     tracks = [...defaultSet]; currentTrackIndex = i; playTrack(i);
 }
 
-// ─── Mode Chips Control Matrix (No Structural Search Navigation Triggers) ───
+// ─── Mode Chips Selection Engine (In-place Dynamic Sorting) ───
 function onMoodChip(el, query) {
     document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     
     if (query === 'for-you') {
-        syncForYouSliderWithHistory();
-        tracks = [...window.homeFeaturedTracks];
-        showToast("Rendering Real Personal Core Data Stream");
+        loadAndRenderHome();
+        tracks = [...PREMIUM_CARDS_TRACKS];
         return;
     }
     
+    // Renders the results inline inside slider view window matrix directly without redirecting
     const selectedMoodTracks = MOOD_TRACKS_DICTIONARY[query];
     if (selectedMoodTracks) {
         tracks = [...selectedMoodTracks];
-        window.homeFeaturedTracks = [...tracks]; 
-        renderDynamicFeaturedRow(window.homeFeaturedTracks);
-        showToast(`Rendering ${el.textContent} Audio Node Matrix`);
+        renderDynamicFeaturedRow(tracks);
+        showToast(`Rendering ${el.textContent} Matrix Filter`);
     }
 }
 
-// ─── Auth Module ───
+// ─── User Profile Auth ───
 function signIn() {
     const name = $('nameInput').value.trim();
     if (!name) { showToast('Please provide your name'); return; }
@@ -2501,7 +2511,7 @@ function signOut() {
     delete $('picUploader').dataset.img;
 }
 
-// ─── Timer Architecture ───
+// ─── Sleep Deferment Timer ───
 function toggleSleepDropdown(e) { e.stopPropagation(); $('sleepDropdown').classList.toggle('active'); }
 function closeSleepDropdown() { $('sleepDropdown').classList.remove('active'); }
 function selectSleepTime(min) { handleSleepTimer(min); closeSleepDropdown(); }
@@ -2524,7 +2534,7 @@ function handleSleepTimer(minutes) {
     }
 }
 
-// ─── Event Listeners ───
+// ─── Interface Event Handlers ───
 function setupEventListeners() {
     const searchInput = $('searchInput');
     searchInput.addEventListener('focus', () => { if (currentView !== 'search') navigateTo('search'); });
@@ -2565,7 +2575,7 @@ function setupEventListeners() {
     window.addEventListener('resize', updateNavIndicatorSlab);
 }
 
-// ─── Navigation Controller ───
+// ─── Navigation Layout Shells ───
 function navigateTo(view) {
     currentView = view;
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -2576,7 +2586,7 @@ function navigateTo(view) {
     if (view === 'home') {
         $('homeView').style.display = 'block'; $('otherView').style.display = 'none';
         $('searchInput').value = '';
-        tracks = [...window.homeFeaturedTracks];
+        tracks = [...PREMIUM_CARDS_TRACKS];
     } else {
         $('homeView').style.display = 'none'; $('otherView').style.display = 'block';
         if (view === 'search') {
@@ -2792,7 +2802,7 @@ const StudioEngine = (() => {
     };
 })();
 
-// ─── Material Core ───
+// ─── Material System Interface ───
 const SwarMaterial = (() => {
     const SURFACES = {
         void:   { cls: '',               label: 'Void' },
@@ -2856,7 +2866,7 @@ function _doCloseAppearancePanel() {
     if (currentView === 'settings') renderSettingsView();
 }
 
-// ─── Bootstrapper ───
+// ─── Document Bootstrapper Init ───
 window.addEventListener('DOMContentLoaded', () => {
     const savedUser = Storage.get('swar_user');
     if (savedUser) { user = savedUser; hideSignIn(); updateUserUI(); }
@@ -2871,7 +2881,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setupAlbumGestures();
     Marquee.init();
     loadAndRenderHome().then(() => {
-        tracks = [...window.homeFeaturedTracks];
+        tracks = [...PREMIUM_CARDS_TRACKS];
     });
     initYouTubePlayer();
     setTimeout(updateNavIndicatorSlab, 300);
