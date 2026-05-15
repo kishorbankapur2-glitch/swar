@@ -29,7 +29,184 @@
             --accent: #ffffff; --accent-glow: rgba(255,255,255,0.12); --danger: #ff453a;
             --ease: cubic-bezier(0.16,1,0.3,1); --ease-spring: cubic-bezier(0.25,1,0.5,1.15);
             --marquee-fade: 18px; --marquee-gap: 34px;
+            /* ── Material System tokens ── */
+            --surface-grain-url: none;
+            --surface-grain-opacity: 0;
         }
+        /* ── Carbon Surface ── */
+        body.surface-carbon {
+            --bg-base: #0a0a0a; --bg-elevated: #131313;
+            --bg-card: rgba(255,255,255,0.035); --bg-card-hover: rgba(255,255,255,0.07);
+            --glass-bg: rgba(8,8,8,0.72); --glass-bg-strong: rgba(8,8,8,0.92);
+            --glass-border: rgba(255,255,255,0.07); --glass-border-strong: rgba(255,255,255,0.13);
+            --text-base: #f0f0ee; --text-subdued: #7a7a80; --text-muted: #404044;
+            --surface-grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            --surface-grain-opacity: 0.032;
+        }
+        /* ── Chalk Surface ── */
+        body.surface-chalk {
+            --bg-base: #f5f5f0; --bg-elevated: #ececec;
+            --bg-card: rgba(0,0,0,0.04); --bg-card-hover: rgba(0,0,0,0.07);
+            --glass-bg: rgba(240,240,235,0.82); --glass-bg-strong: rgba(240,240,235,0.96);
+            --glass-border: rgba(0,0,0,0.08); --glass-border-strong: rgba(0,0,0,0.14);
+            --text-base: #0a0a0c; --text-subdued: #6b6b70; --text-muted: #a0a0a5;
+            --surface-grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            --surface-grain-opacity: 0.045;
+        }
+        body.surface-chalk .bottom-nav { box-shadow: 0 -1px 0 rgba(0,0,0,0.08), 0 -4px 20px rgba(0,0,0,0.06); }
+        body.surface-chalk .mini-player { box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+        body.surface-chalk .fullscreen-player { background: #f0f0eb; }
+        body.surface-chalk #fullscreenBg { background: linear-gradient(180deg,#e8e8e2 0%,#f5f5f0 100%) !important; }
+        body.surface-chalk .fs-orb-1, body.surface-chalk .fs-orb-2, body.surface-chalk .fs-orb-3 { opacity: 0.04; }
+        body.surface-chalk ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+        /* Grain overlay element */
+        #surfaceGrain {
+            position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+            background-image: var(--surface-grain-url);
+            background-size: 200px 200px;
+            opacity: var(--surface-grain-opacity);
+            transition: opacity 0.5s var(--ease);
+        }
+        /* Material transition helper */
+        body.material-transitioning,
+        body.material-transitioning * {
+            transition-property: background-color, background, color, border-color, box-shadow !important;
+            transition-duration: 0.55s !important;
+            transition-timing-function: var(--ease) !important;
+        }
+
+        /* ═══════════════════════════════════════════════
+           APPEARANCE PANEL — Inline Slide-In
+        ═══════════════════════════════════════════════ */
+        .appearance-panel {
+            position: fixed; inset: 0; z-index: 2800;
+            display: flex; align-items: flex-end;
+            background: rgba(0,0,0,0); pointer-events: none;
+            transition: background 0.4s var(--ease);
+        }
+        .appearance-panel.active { background: rgba(0,0,0,0.7); pointer-events: all; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .appearance-sheet {
+            width: 100%; max-width: 520px; margin: 0 auto;
+            background: var(--bg-elevated);
+            border: 1px solid var(--glass-border-strong);
+            border-bottom: none;
+            border-radius: 28px 28px 0 0;
+            padding: 0 0 calc(28px + env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.5s var(--ease-spring);
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
+            overflow: hidden;
+        }
+        .appearance-panel.active .appearance-sheet { transform: translateY(0); }
+        .appearance-sheet-handle {
+            width: 36px; height: 4px; border-radius: 2px;
+            background: var(--glass-border-strong);
+            margin: 12px auto 0;
+        }
+        .appearance-sheet-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 22px 14px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .appearance-sheet-title {
+            font-size: 1.05rem; font-weight: 800; letter-spacing: -0.025em; color: var(--text-base);
+        }
+        .appearance-sheet-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s var(--ease-spring);
+        }
+        .appearance-sheet-close:hover { background: rgba(255,255,255,0.14); transform: scale(1.1) rotate(90deg); }
+        .appearance-sheet-close svg { width: 14px; height: 14px; fill: var(--text-base); }
+        .ap-section-label {
+            font-size: 0.6rem; font-weight: 800; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--text-subdued);
+            padding: 16px 22px 8px;
+        }
+        /* Material pill row */
+        .ap-material-row {
+            display: flex; gap: 8px; padding: 0 22px 4px;
+        }
+        .ap-pill {
+            flex: 1; padding: 12px 8px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 7px;
+            border-radius: 14px; cursor: pointer;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s var(--ease-spring);
+            position: relative; overflow: hidden;
+        }
+        .ap-pill:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+        .ap-pill:active { transform: scale(0.95); }
+        .ap-pill.active {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.28);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        body.surface-chalk .ap-pill.active { border-color: rgba(0,0,0,0.28); background: rgba(0,0,0,0.06); box-shadow: 0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5); }
+        .ap-swatch {
+            width: 38px; height: 38px; border-radius: 10px;
+            transition: transform 0.35s var(--ease-spring), box-shadow 0.3s;
+        }
+        .ap-pill.active .ap-swatch { transform: scale(1.1); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+        .ap-pill-void .ap-swatch   { background: #000000; border: 1px solid rgba(255,255,255,0.14); }
+        .ap-pill-carbon .ap-swatch { background: #0a0a0a; border: 1px solid rgba(255,255,255,0.08); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0, rgba(255,255,255,0.02) 1px, transparent 0, transparent 50%); background-size: 6px 6px; }
+        .ap-pill-chalk .ap-swatch  { background: #f5f5f0; border: 1px solid rgba(0,0,0,0.1); }
+        .ap-pill-name {
+            font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--text-subdued);
+            transition: color 0.2s;
+        }
+        .ap-pill.active .ap-pill-name { color: var(--text-base); }
+        /* Active dot */
+        .ap-pill.active::after {
+            content: ''; position: absolute; bottom: 6px; left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 4px; border-radius: 50%;
+            background: var(--text-base);
+            animation: apDotPop 0.35s var(--ease-spring);
+        }
+        @keyframes apDotPop { from { transform: translateX(-50%) scale(0); } to { transform: translateX(-50%) scale(1); } }
+        /* Mini preview strip */
+        .ap-preview-wrap { padding: 10px 22px 0; }
+        .ap-preview-card {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 10px 14px;
+            display: flex; align-items: center; gap: 10px;
+            position: relative; overflow: hidden;
+            transition: background 0.4s var(--ease), border-color 0.4s;
+        }
+        .ap-preview-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 40%, transparent);
+        }
+        body.surface-chalk .ap-preview-card::before { background: linear-gradient(90deg, transparent, rgba(0,0,0,0.06) 40%, transparent); }
+        .ap-preview-art {
+            width: 40px; height: 40px; border-radius: 9px;
+            background: var(--bg-card-hover); border: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .ap-preview-art svg { fill: var(--text-subdued); }
+        .ap-preview-info { flex: 1; min-width: 0; }
+        .ap-preview-title { font-size: 0.82rem; font-weight: 700; color: var(--text-base); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+        .ap-preview-sub { font-size: 0.7rem; color: var(--text-subdued); }
+        .ap-preview-btns { display: flex; gap: 5px; }
+        .ap-preview-btn {
+            width: 30px; height: 30px; border-radius: 7px;
+            background: var(--bg-card-hover); border: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s var(--ease-spring);
+        }
+        .ap-preview-btn:hover { transform: scale(1.1); }
+        .ap-preview-btn svg { fill: var(--text-base); opacity: 0.7; }
+        .ap-preview-btn-play { background: var(--text-base) !important; border-color: transparent !important; }
+        .ap-preview-btn-play svg { fill: var(--bg-base) !important; opacity: 1 !important; }
+        .ap-preview-progress {
+            position: absolute; bottom: 0; left: 14px; right: 14px;
+            height: 2px; background: var(--glass-border); border-radius: 2px; overflow: hidden;
+        }
+        .ap-preview-fill { height: 100%; width: 38%; background: var(--text-base); border-radius: 2px; transition: background 0.4s; }
         html, body { background: var(--bg-base); color: var(--text-base); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
         body { background-image: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 75%), radial-gradient(circle at 100% 100%, rgba(255,255,255,0.02) 0%, transparent 50%); background-attachment: fixed; }
         button { font-family: inherit; outline: none; border: none; background: none; color: inherit; cursor: pointer; }
@@ -915,6 +1092,55 @@
 </head>
 <body>
 
+<!-- Surface grain overlay (Carbon + Chalk surfaces) -->
+<div id="surfaceGrain" aria-hidden="true"></div>
+
+<!-- APPEARANCE PANEL -->
+<div class="appearance-panel" id="appearancePanel" onclick="closeAppearancePanel(event)">
+    <div class="appearance-sheet" onclick="event.stopPropagation()">
+        <div class="appearance-sheet-handle"></div>
+        <div class="appearance-sheet-header">
+            <span class="appearance-sheet-title">Surface Material</span>
+            <button class="appearance-sheet-close" onclick="closeAppearancePanel()">
+                <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="ap-section-label">Choose your surface</div>
+        <div class="ap-material-row">
+            <button class="ap-pill ap-pill-void active" id="apPillVoid" onclick="SwarMaterial.apply('void')" aria-label="Void — pure OLED black">
+                <div class="ap-swatch"></div>
+                <span class="ap-pill-name">Void</span>
+            </button>
+            <button class="ap-pill ap-pill-carbon" id="apPillCarbon" onclick="SwarMaterial.apply('carbon')" aria-label="Carbon — textured near-black">
+                <div class="ap-swatch"></div>
+                <span class="ap-pill-name">Carbon</span>
+            </button>
+            <button class="ap-pill ap-pill-chalk" id="apPillChalk" onclick="SwarMaterial.apply('chalk')" aria-label="Chalk — inverted monochrome">
+                <div class="ap-swatch"></div>
+                <span class="ap-pill-name">Chalk</span>
+            </button>
+        </div>
+        <div class="ap-section-label" style="padding-top:14px">Preview</div>
+        <div class="ap-preview-wrap">
+            <div class="ap-preview-card">
+                <div class="ap-preview-art">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>
+                </div>
+                <div class="ap-preview-info">
+                    <div class="ap-preview-title" id="apPreviewTitle">Not Playing</div>
+                    <div class="ap-preview-sub" id="apPreviewArtist">—</div>
+                </div>
+                <div class="ap-preview-btns">
+                    <div class="ap-preview-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></div>
+                    <div class="ap-preview-btn ap-preview-btn-play"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></div>
+                    <div class="ap-preview-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
+                </div>
+                <div class="ap-preview-progress"><div class="ap-preview-fill"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- SPLASH SCREEN -->
 <div id="splash">
     <div class="splash-grain"></div>
@@ -1760,14 +1986,16 @@ function renderProfileView() {
 
 function renderSettingsView() {
     $('sectionTitle').textContent = 'Settings';
+    const surfaceNames = { void: 'Void', carbon: 'Carbon', chalk: 'Chalk' };
+    const currentSurface = Storage.get('swar_surface') || 'void';
     $('contentArea').innerHTML = `
         <div class="profile-page">
             <div class="settings-section">
-                <div class="settings-item" onclick="showToast('Appearance — coming soon')">
+                <div class="settings-item" onclick="openAppearancePanel()">
                     <div class="settings-item-icon"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
                     <div style="flex:1">
                         <div class="settings-item-label">Appearance</div>
-                        <div class="settings-item-sub">Themes, colors & display</div>
+                        <div class="settings-item-sub">Surface · ${surfaceNames[currentSurface] || 'Void'}</div>
                     </div>
                     <div class="settings-item-arrow"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
                 </div>
@@ -2016,6 +2244,7 @@ function setupEventListeners() {
     });
 
     window.addEventListener('popstate', e => {
+        if ($('appearancePanel').classList.contains('active')) { _doCloseAppearancePanel(); return; }
         if ($('inappWebview').classList.contains('active')) { closeInAppWebview(); return; }
         if ($('profileModal').classList.contains('active')) { closeProfileModal(); return; }
         if (isFullscreenOpen) { closeFullscreen(); return; }
@@ -2097,6 +2326,78 @@ function setGreeting() {
     $('greeting').textContent = (user && user.name !== 'Guest User') ? `${greet}, ${user.name.split(' ')[0]}` : greet;
 }
 
+// ─── Material System ───
+const SwarMaterial = (() => {
+    const SURFACES = {
+        void:   { cls: '',               label: 'Void' },
+        carbon: { cls: 'surface-carbon', label: 'Carbon' },
+        chalk:  { cls: 'surface-chalk',  label: 'Chalk' }
+    };
+    function apply(name) {
+        const surface = SURFACES[name];
+        if (!surface) return;
+        const body = document.body;
+        // Smooth transition
+        body.classList.add('material-transitioning');
+        body.classList.remove('surface-carbon', 'surface-chalk');
+        if (surface.cls) body.classList.add(surface.cls);
+        // Update pill states
+        ['void','carbon','chalk'].forEach(n => {
+            const pill = document.getElementById('apPill' + n.charAt(0).toUpperCase() + n.slice(1));
+            if (pill) pill.classList.toggle('active', n === name);
+        });
+        // Update preview card with current track
+        const previewTitle = $('apPreviewTitle');
+        const previewArtist = $('apPreviewArtist');
+        if (previewTitle && tracks[currentTrackIndex]) {
+            previewTitle.textContent = tracks[currentTrackIndex].title;
+            previewArtist.textContent = tracks[currentTrackIndex].artist;
+        }
+        // Persist
+        Storage.set('swar_surface', name);
+        // Remove transition class after it's done
+        setTimeout(() => body.classList.remove('material-transitioning'), 600);
+        showToast(`Surface: ${surface.label}`);
+    }
+    function init() {
+        const saved = Storage.get('swar_surface') || 'void';
+        // Apply silently without toast on boot
+        const body = document.body;
+        const surface = SURFACES[saved];
+        if (surface) {
+            body.classList.remove('surface-carbon', 'surface-chalk');
+            if (surface.cls) body.classList.add(surface.cls);
+        }
+        ['void','carbon','chalk'].forEach(n => {
+            const pill = document.getElementById('apPill' + n.charAt(0).toUpperCase() + n.slice(1));
+            if (pill) pill.classList.toggle('active', n === saved);
+        });
+    }
+    return { apply, init };
+})();
+
+function openAppearancePanel() {
+    const panel = $('appearancePanel');
+    panel.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    // Sync preview with current track
+    if (tracks[currentTrackIndex]) {
+        $('apPreviewTitle').textContent = tracks[currentTrackIndex].title;
+        $('apPreviewArtist').textContent = tracks[currentTrackIndex].artist;
+    }
+    history.pushState({ swarAppearance: true }, '');
+}
+function closeAppearancePanel(e) {
+    if (e && e.target !== $('appearancePanel')) return;
+    _doCloseAppearancePanel();
+}
+function _doCloseAppearancePanel() {
+    $('appearancePanel').classList.remove('active');
+    document.body.style.overflow = '';
+    // Refresh Settings subtitle
+    if (currentView === 'settings') renderSettingsView();
+}
+
 // ─── Init ───
 window.addEventListener('DOMContentLoaded', () => {
     const savedUser = Storage.get('swar_user');
@@ -2105,6 +2406,7 @@ window.addEventListener('DOMContentLoaded', () => {
     likedTracks = new Map(savedLiked.map(t => [t.id, t]));
     totalPlayedCount = Storage.get('swar_played_count') || 0;
     setGreeting();
+    SwarMaterial.init();
     setupEventListeners();
     setupSwipeGesture();
     setupScrubbing();
