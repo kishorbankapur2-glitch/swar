@@ -914,7 +914,7 @@
         }
         @keyframes fsEntrance {
             from { transform: translateY(100%) scale(0.96); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
+            to   { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         .fullscreen-bg {
@@ -1781,108 +1781,6 @@ const PREMIUM_CARDS_TRACKS = [
     { id: 'G8C_U0w8v6A', title: 'Rockabye', artist: 'Clean Bandit', duration: 251, meta: '4:11' }
 ];
 
-// ─── Vibe Taxonomy Engine ───
-const VIBE_MAP = {
-    'vUCM_O-Zs1Y': 'romantic', 'T94PHkuydXo': 'romantic', 'WmuF8H_02As': 'romantic',
-    'kXMR_9o1Vxo': 'romantic', 'Ax8o0w_v8k0': 'romantic', '2Vv-BfVoq4g': 'romantic',
-    '1Ek8X0idI44': 'romantic', 'Co0tS6nI0G4': 'romantic', '6A0v-9I0K9o': 'romantic',
-    'pa00E_J26FA': 'energetic', 'K4DyBUG242c': 'energetic', 'N2C0U9w8v7Q': 'energetic',
-    'f_EioO80V94': 'energetic', 'h7C8NfA_2Q4': 'energetic', 'OPf0YbXqDm0': 'energetic',
-    '0J2QdDbf7GA': 'party', 'tgOu00H6KTo': 'party', 'B8C_8w9v7Q0': 'party', 'L0A8w_v9N6A': 'party',
-    'fKopy74weus': 'chill', '3AtDnEC4zak': 'chill', 'v2BfP_oZqyI': 'chill',
-    'hT_nvWreIhg': 'chill', '09R8_2nJtjg': 'chill', 'fLexgO8oVw4': 'pop',
-    'KdhQ7k_iW5M': 'pop', '7wtfhZwyrP0': 'pop', 'kJQP7kiw5Fk': 'pop', 'iX-QaNcmw8M': 'pop',
-    '4NRXx6U8ABQ': 'sad', 'w7_r5Q1F_co': 'sad'
-};
-
-const VIBE_SEARCH_QUERIES = {
-    romantic:  ['romantic hindi songs 2026','love songs arijit singh','bollywood romantic hits','ed sheeran love','taylor swift love songs'],
-    energetic: ['imagine dragons hits','linkin park best songs','high energy workout songs','motivational songs 2026','eminem hits'],
-    party:     ['best party songs 2026','edm party hits','avicii best songs','martin garrix top songs','chainsmokers hits'],
-    chill:     ['chill vibes playlist 2026','lo-fi chill songs','the weeknd best songs','midnight chill music','indie chill hits'],
-    pop:       ['pop hits 2026','billboard pop songs','popular english songs','top pop playlist','feel good pop songs'],
-    sad:       ['sad songs playlist 2026','emotional hindi songs','heartbreak songs','adele best songs','soft emotional english'],
-    hiphop:    ['hip hop hits 2026','rap songs trending','drake hits','eminem best','hip hop classics'],
-    phonk:     ['phonk music 2026','drift phonk songs','tiktok phonk hits','aggressive phonk','dark phonk playlist'],
-    indie:     ['indie pop 2026','indie songs trending','alternative indie hits','bedroom pop playlist','indie rock hits'],
-    default:   ['top songs 2026','trending music worldwide','best hits playlist','music mix 2026','popular songs today']
-};
-
-function inferVibeFromTrack(track) {
-    if (VIBE_MAP[track.id]) return VIBE_MAP[track.id];
-    const text = (track.title + ' ' + track.artist).toLowerCase();
-    if (/phonk|drift|dark|aggressive|sigma/.test(text)) return 'phonk';
-    if (/love|pyaar|romance|dil|heart|tum|tere|teri|ishq|mohabbat/.test(text)) return 'romantic';
-    if (/sad|emotional|breakup|cry|tears|dard/.test(text)) return 'sad';
-    if (/party|dance|club|edm|remix|bass|drop/.test(text)) return 'party';
-    if (/rap|hip.?hop|freestyle|bars|cypher/.test(text)) return 'hiphop';
-    if (/chill|relax|vibes|night|midnight|calm|slow/.test(text)) return 'chill';
-    if (/workout|run|power|energy|fire|beast|strong/.test(text)) return 'energetic';
-    if (/indie|alternative|acoustic|folk|bedroom/.test(text)) return 'indie';
-    return 'pop';
-}
-
-// ─── For You Feed Dynamic Matrix Builder ───
-async function buildForYouFeed() {
-    const history = Storage.get('swar_played_history_list') || [];
-    const vibeCounts = {};
-    history.forEach(track => {
-        const vibe = inferVibeFromTrack(track);
-        vibeCounts[vibe] = (vibeCounts[vibe] || 0) + 1;
-    });
-
-    let topVibes = Object.entries(vibeCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(e => e[0]);
-
-    const hasHistory = topVibes.length > 0;
-    if (!hasHistory) topVibes = ['default'];
-
-    const tracksPerVibe = Math.max(1, Math.floor(28 / topVibes.length));
-    showToast(hasHistory ? `Tuning For You Matrix: ${topVibes.join(' + ')}…` : 'Assembling your personalized feed…');
-
-    const allResults = [];
-    await Promise.allSettled(topVibes.map(async (vibe) => {
-        const queries = VIBE_SEARCH_QUERIES[vibe] || VIBE_SEARCH_QUERIES['default'];
-        const picked = queries.sort(() => Math.random() - 0.5).slice(0, 2);
-        
-        await Promise.allSettled(picked.map(async (q) => {
-            try {
-                const res = await searchAcrossInstances(q);
-                if (res?.items) {
-                    const parsed = res.items
-                        .filter(it => it.url?.includes('/watch?v='))
-                        .slice(0, tracksPerVibe)
-                        .map(it => {
-                            const id = it.url.split('v=')[1]?.split('&')[0] || '';
-                            return {
-                                id,
-                                title: (it.title || 'Unknown').replace(/&quot;/g, '"'),
-                                artist: it.uploaderName || 'Unknown Artist',
-                                duration: it.duration || 0,
-                                _vibe: vibe
-                            };
-                        });
-                    allResults.push(...parsed);
-                }
-            } catch {}
-        }));
-    }));
-
-    const seen = new Set();
-    const unique = allResults.filter(t => t.id && !seen.has(t.id) && seen.add(t.id));
-    const shuffled = unique.sort(() => Math.random() - 0.5);
-    const finalTracks = shuffled.length >= 6 ? shuffled : PREMIUM_CARDS_TRACKS;
-
-    window.homeFeaturedTracks = finalTracks;
-    renderDynamicFeaturedRow(finalTracks);
-    tracks = [...finalTracks];
-
-    const vibeLabel = hasHistory ? topVibes.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(' + ') : 'Curated Mix';
-    showToast(`For You: ${vibeLabel} (${finalTracks.length} tracks loaded)`);
-}
-
 const MOOD_TRACKS_DICTIONARY = {
     'romance': [
         { id: 'vUCM_O-Zs1Y', title: 'Tum Hi Ho', artist: 'Arijit Singh', duration: 262, meta: '4:22' },
@@ -1916,6 +1814,136 @@ const MOOD_TRACKS_DICTIONARY = {
         { id: 'f_EioO80V94', title: 'Mockingbird', artist: 'Eminem', duration: 251, meta: '4:11' }
     ]
 };
+
+// ─── Vibe Taxonomy Engine ───
+const VIBE_MAP = {
+    // Romantic / Love
+    'vUCM_O-Zs1Y': 'romantic', 'T94PHkuydXo': 'romantic', 'WmuF8H_02As': 'romantic',
+    'kXMR_9o1Vxo': 'romantic', 'Ax8o0w_v8k0': 'romantic', '2Vv-BfVoq4g': 'romantic',
+    '1Ek8X0idI44': 'romantic', '6A0v-9I0K9o': 'romantic',
+    // Energetic / Hype
+    'pa00E_J26FA': 'energetic', 'K4DyBUG242c': 'energetic', 'N2C0U9w8v7Q': 'energetic',
+    'h7C8NfA_2Q4': 'energetic', 'OPf0YbXqDm0': 'energetic',
+    // Party / EDM
+    '0J2QdDbf7GA': 'party', 'tgOu00H6KTo': 'party', 'B8C_8w9v7Q0': 'party',
+    'L0A8w_v9N6A': 'party', 'G8C_U0w8v6A': 'party',
+    // Chill / Vibes
+    'fKopy74weus': 'chill', '3AtDnEC4zak': 'chill', 'v2BfP_oZqyI': 'chill',
+    'hT_nvWreIhg': 'chill', '09R8_2nJtjg': 'chill', 'Co0tS6nI0G4': 'chill',
+    // Pop / Feel Good
+    'fLexgO8oVw4': 'pop', 'KdhQ7k_iW5M': 'pop', '7wtfhZwyrP0': 'pop',
+    'kJQP7kiw5Fk': 'pop', 'iX-QaNcmw8M': 'pop',
+    // Sad / Emotional
+    '4NRXx6U8ABQ': 'sad', 'w7_r5Q1F_co': 'sad',
+    // Hip-Hop / Rap
+    'f_EioO80V94': 'hiphop'
+};
+
+const VIBE_SEARCH_QUERIES = {
+    romantic:  ['romantic hindi songs 2025','love songs arijit singh','bollywood romantic hits','ed sheeran love','taylor swift love songs'],
+    energetic: ['imagine dragons hits','linkin park best songs','high energy workout songs','motivational songs 2025','eminem hits'],
+    party:     ['best party songs 2025','edm party hits','avicii best songs','martin garrix top songs','chainsmokers hits'],
+    chill:     ['chill vibes playlist 2025','lo-fi chill songs','the weeknd best songs','midnight chill music','indie chill hits'],
+    pop:       ['pop hits 2025','billboard pop songs','popular english songs','top pop playlist','feel good pop songs'],
+    sad:       ['sad songs playlist 2025','emotional hindi songs','heartbreak songs','adele best songs','soft emotional english'],
+    hiphop:    ['hip hop hits 2025','rap songs trending','drake hits','eminem best','hip hop classics'],
+    phonk:     ['phonk music 2025','drift phonk songs','tiktok phonk hits','aggressive phonk','dark phonk playlist'],
+    indie:     ['indie pop 2025','indie songs trending','alternative indie hits','bedroom pop playlist','indie rock hits'],
+    default:   ['top songs 2025','trending music worldwide','best hits playlist','music mix 2025','popular songs today']
+};
+
+// Infer vibe from track title/artist heuristically
+function inferVibeFromTrack(track) {
+    if (VIBE_MAP[track.id]) return VIBE_MAP[track.id];
+    const text = (track.title + ' ' + track.artist).toLowerCase();
+    if (/phonk|drift|sigma|aggressive|skibidi/.test(text)) return 'phonk';
+    if (/love|pyaar|romance|dil|heart|tum|tere|teri|ishq|mohabbat|mere|sajna/.test(text)) return 'romantic';
+    if (/sad|emotional|breakup|cry|tears|dard|alone|miss/.test(text)) return 'sad';
+    if (/party|dance|club|edm|remix|bass|drop|banger/.test(text)) return 'party';
+    if (/rap|hip.?hop|freestyle|bars|cypher|flow/.test(text)) return 'hiphop';
+    if (/chill|relax|vibes|night|midnight|calm|slow|lofi|lo.fi/.test(text)) return 'chill';
+    if (/workout|run|power|energy|fire|beast|strong|pump/.test(text)) return 'energetic';
+    if (/indie|alternative|acoustic|folk|bedroom/.test(text)) return 'indie';
+    return 'pop';
+}
+
+// ─── For You Feed Builder — Intelligent Vibe-Based Engine ───
+async function buildForYouFeed() {
+    // Step 1: Analyze play history
+    const history = Storage.get('swar_played_history_list') || [];
+
+    // Step 2: Count vibes from history
+    const vibeCounts = {};
+    history.forEach(track => {
+        const vibe = inferVibeFromTrack(track);
+        vibeCounts[vibe] = (vibeCounts[vibe] || 0) + 1;
+    });
+
+    // Step 3: Sort vibes by frequency, take top 3 (or default if no history)
+    let topVibes = Object.entries(vibeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(e => e[0]);
+
+    const hasHistory = topVibes.length > 0;
+    if (!hasHistory) topVibes = ['default'];
+
+    // Step 4: ~10 tracks per vibe so total ~30
+    const tracksPerVibe = Math.max(1, Math.floor(30 / topVibes.length));
+
+    showToast(hasHistory
+        ? `Building For You: ${topVibes.join(' + ')} vibes…`
+        : 'Curating your personal feed…');
+
+    const allResults = [];
+
+    // Run all vibe queries in parallel
+    await Promise.allSettled(topVibes.map(async (vibe) => {
+        const queries = VIBE_SEARCH_QUERIES[vibe] || VIBE_SEARCH_QUERIES['default'];
+        // Pick 2 random queries per vibe for variety
+        const picked = [...queries].sort(() => Math.random() - 0.5).slice(0, 2);
+
+        await Promise.allSettled(picked.map(async (q) => {
+            try {
+                const res = await searchAcrossInstances(q);
+                if (res?.items) {
+                    const parsed = res.items
+                        .filter(it => it.url?.includes('/watch?v='))
+                        .slice(0, tracksPerVibe)
+                        .map(it => {
+                            const id = it.url.split('v=')[1]?.split('&')[0] || '';
+                            return {
+                                id,
+                                title: (it.title || 'Unknown').replace(/&quot;/g, '"'),
+                                artist: it.uploaderName || 'Unknown Artist',
+                                duration: it.duration || 0,
+                                _vibe: vibe
+                            };
+                        });
+                    allResults.push(...parsed);
+                }
+            } catch {}
+        }));
+    }));
+
+    // Step 5: Deduplicate & shuffle
+    const seen = new Set();
+    const unique = allResults.filter(t => t.id && !seen.has(t.id) && seen.add(t.id));
+    const shuffled = unique.sort(() => Math.random() - 0.5);
+
+    // Step 6: Fallback to premium defaults if API returned nothing
+    const finalTracks = shuffled.length >= 6 ? shuffled : PREMIUM_CARDS_TRACKS;
+
+    window.homeFeaturedTracks = finalTracks;
+    renderDynamicFeaturedRow(finalTracks);
+    tracks = [...finalTracks];
+
+    const vibeLabel = hasHistory
+        ? topVibes.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(' + ')
+        : 'Curated Mix';
+
+    showToast(`For You: ${vibeLabel} · ${finalTracks.length} tracks`);
+}
 
 // ─── State Configuration ───
 let player = null, isPlaying = false, isPlayerReady = false;
@@ -2353,13 +2381,6 @@ function renderLibraryView() {
     tracks = collection; renderTrackGrid();
 }
 
-// ─── Layout Skeletons ───
-function renderHomeSkeletons() {
-    $('featuredRow').innerHTML = Array(4).fill('<div class="featured-card skeleton" style="opacity:1"></div>').join('');
-    $('klGrid').innerHTML = Array(4).fill('<div class="kl-card skeleton" style="height:170px;border-radius:12px;opacity:1"></div>').join('');
-    $('klGrid2').innerHTML = Array(4).fill('<div class="kl-card-2 skeleton" style="height:150px;border-radius:50%;opacity:1"></div>').join('');
-}
-
 function renderQueueList() {
     const upNext = tracks.slice(currentTrackIndex + 1);
     if (!upNext.length) { $('queueList').innerHTML = '<div style="font-size:0.85rem;color:var(--text-subdued);padding:20px 10px;text-align:center">No upcoming tracks in the list</div>'; return; }
@@ -2432,12 +2453,20 @@ function openAboutPage() {
 }
 
 // ─── Home Base Initialization & Engine Loading ───
+function renderHomeSkeletons() {
+    $('featuredRow').innerHTML = Array(4).fill('<div class="featured-card skeleton" style="opacity:1"></div>').join('');
+    $('klGrid').innerHTML = Array(4).fill('<div class="kl-card skeleton" style="height:170px;border-radius:12px;opacity:1"></div>').join('');
+    $('klGrid2').innerHTML = Array(4).fill('<div class="kl-card-2 skeleton" style="height:150px;border-radius:50%;opacity:1"></div>').join('');
+}
+
 async function loadAndRenderHome() {
     renderHomeSkeletons();
+    // Show premium defaults instantly
     window.homeFeaturedTracks = [...PREMIUM_CARDS_TRACKS];
     renderDynamicFeaturedRow(window.homeFeaturedTracks);
     renderDynamicKLGrid();
     renderDynamicKLGrid2();
+    // Then build intelligent For You feed in background
     buildForYouFeed().catch(() => {
         renderDynamicFeaturedRow(PREMIUM_CARDS_TRACKS);
     });
@@ -2456,10 +2485,12 @@ function renderDynamicFeaturedRow(arr) {
     `).join('');
 }
 
+// Fixed to only reflect real tracks played by user via client active playback
 function renderDynamicKLGrid() {
     const historyPlayedTracks = Storage.get('swar_played_history_list') || [];
     
     if (historyPlayedTracks.length === 0) {
+        // Fallback standard curated set if local device footprint empty
         const defaultSet = PREMIUM_CARDS_TRACKS.slice(0, 6);
         $('klGrid').innerHTML = defaultSet.map((t, i) => `
             <div class="kl-card" onclick="playFallbackKL(${i})" style="--stagger:${(i * 0.07).toFixed(2)}s">
@@ -2565,6 +2596,7 @@ function onMoodChip(el, query) {
     el.classList.add('active');
     
     if (query === 'for-you') {
+        // Intelligent vibe-based personalized feed
         buildForYouFeed().catch(() => {
             renderDynamicFeaturedRow(PREMIUM_CARDS_TRACKS);
         });
@@ -2572,6 +2604,7 @@ function onMoodChip(el, query) {
         return;
     }
     
+    // Renders the results inline inside slider view window matrix directly without redirecting
     const selectedMoodTracks = MOOD_TRACKS_DICTIONARY[query];
     if (selectedMoodTracks) {
         tracks = [...selectedMoodTracks];
